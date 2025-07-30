@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Schulfest 2025 Quiz</title>
+<style>
+  body {
+    background-color: #000;
+    color: #0f0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0; padding: 0;
+    display: flex; flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+  header {
+    font-size: 2.5rem;
+    margin: 20px 0;
+    font-weight: bold;
+  }
+  main {
+    width: 90%;
+    max-width: 700px;
+    background-color: #111;
+    border: 2px solid #0f0;
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .section {
+    margin-bottom: 20px;
+  }
+  button {
+    background-color: #000;
+    color: #0f0;
+    border: 2px solid #0f0;
+    padding: 10px 20px;
+    margin: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background-color: #0f0;
+    color: #000;
+  }
+  button:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  .answers {
+    display: flex;
+    flex-direction: column;
+    margin-top: 15px;
+  }
+  .answer-btn {
+    text-align: left;
+    margin-bottom: 10px;
+  }
+  .answer-btn.correct {
+    background-color: #0a0;
+    color: #fff;
+  }
+  .answer-btn.wrong {
+    background-color: #a00;
+    color: #fff;
+  }
+  #progress {
+    margin-bottom: 10px;
+  }
+  #score {
+    margin-top: 15px;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+<header>Schulfest 2025 Quiz</header>
+
+<main>
+  <div id="start-screen" class="section">
+    <h2>Wähle ein Thema:</h2>
+    <div id="topic-buttons"></div>
+
+    <h2>Wähle eine Schwierigkeit:</h2>
+    <div id="difficulty-buttons"></div>
+  </div>
+
+  <div id="quiz-screen" class="section" style="display:none;">
+    <div id="progress"></div>
+    <div id="question"></div>
+    <div class="answers" id="answers"></div>
+  </div>
+
+  <div id="result-screen" class="section" style="display:none;">
+    <h2>Ergebnis</h2>
+    <p id="score"></p>
+    <button id="restart-btn">Neues Quiz starten</button>
+  </div>
+</main>
+
+<script>
+  // Themen & Schwierigkeitsstufen
+  const topics = ["Schulfest 2025", "Allgemeinwissen", "Schule & Bildung", "Natur & Umwelt", "Sport & Freizeit"];
+  const difficulties = ["leicht", "mittel", "schwer"];
+
+  // Quizdaten: 5 Themen × 3 Schwierigkeitsgrade × 10 Fragen = 150 Fragen
+  // Hier jeweils 10 Beispiel-Fragen pro Thema & Schwierigkeit
+  // Fragen sind als {question, answers[], correct} aufgebaut
+  const quizData = {
+    "Schulfest 2025": {
+      leicht: [
+        {question:"Wann findet das Schulfest 2025 statt?", answers:["Januar","Mai","September","Dezember"], correct:2},
+        {question:"Wer organisiert das Schulfest?", answers:["Schüler","Lehrer","Eltern","Alle zusammen"], correct:3},
+        {question:"Wie viele Klassen nehmen am Schulfest teil?", answers:["10","15","20","25"], correct:2},
+        {question:"Welche Sportart gibt es am Schulfest?", answers:["Fußball","Basketball","Tennis","Alle genannten"], correct:3},
+        {question:"Wie lange dauert das Schulfest?", answers:["Einen Tag","Ein Wochenende","Eine Woche","Zwei Tage"], correct:0},
+        {question:"Welche Farbe hat die Schrift auf dem Plakat?", answers:["Rot","Grün","Blau","Gelb"], correct:1},
+        {question:"Was kostet ein Getränk?", answers:["1€","2€","3€","4€"], correct:1},
+        {question:"Wer macht die Ankündigungen?", answers:["Schüler","Lehrer","Moderator","DJ"], correct:2},
+        {question:"Was ist das Motto des Schulfests?", answers:["Gemeinsam Stark","Zukunft Gestalten","Vielfalt Leben","Schule verbindet"], correct:0},
+        {question:"Wie viele Jahre gibt es das Schulfest schon?", answers:["5","10","15","20"], correct:2}
+      ],
+      mittel: [
+        {question:"Welches Musikgenre wird beim Schulfest gespielt?", answers:["Pop","Rock","Hip-Hop","Alle genannten"], correct:3},
+        {question:"Was ist das Highlight des Schulfests?", answers:["Feuerwerk","Tanzshow","Kuchenbuffet","Quiz"], correct:0},
+        {question:"Wie viele Schüler besuchen die Schule?", answers:["500","750","1000","1200"], correct:1},
+        {question:"Welche Klasse hat den Stand mit Getränken?", answers:["5a","7b","9c","10d"], correct:2},
+        {question:"Wer macht die Fotos auf dem Fest?", answers:["Lehrer","Schüler","Externer Fotograf","Eltern"], correct:2},
+        {question:"Wie viele Lehrer sind am Schulfest beteiligt?", answers:["5","10","15","20"], correct:1},
+        {question:"Wie heißt das Maskottchen?", answers:["Fritzi","Maxi","Lena","Tom"], correct:0},
+        {question:"Welche Farbe dominieren auf dem Schulfest?", answers:["Rot und Weiß","Grün und Schwarz","Blau und Gelb","Orange und Schwarz"], correct:1},
+        {question:"Wer eröffnet das Schulfest?", answers:["Schulleiter","Bürgermeister","Klassenvertretung","Moderator"], correct:0},
+        {question:"Was kostet der Eintritt?", answers:["Kostenlos","1€","2€","3€"], correct:0}
+      ],
+      schwer: [
+        {question:"Wie viele Kuchen werden gespendet?", answers:["30","40","50","60"], correct:2},
+        {question:"Wie viele Kilometer läuft man bei der Schatzsuche?", answers:["1","2","3","4"], correct:1},
+        {question:"Wie viele Chöre treten auf?", answers:["1","2","3","4"], correct:2},
+        {question:"Wie viele Stunden dauert das Schulfest?", answers:["5","6","7","8"], correct:3},
+        {question:"Wie viele Helfer gibt es insgesamt?", answers:["20","30","40","50"], correct:2},
+        {question:"Wie lange dauert das Feuerwerk?", answers:["10 Min","15 Min","20 Min","25 Min"], correct:1},
+        {question:"Wie viele Klassen gestalten Stände?", answers:["10","12","14","16"], correct:3},
+        {question:"Wie viele Jury-Mitglieder gibt es?", answers:["3","4","5","6"], correct:1},
+        {question:"Wie viele Musiker spielen auf der Bühne?", answers:["4","5","6","7"], correct:1},
+        {question:"Wie viele Preise gibt es zu gewinnen?", answers:["3","5","7","10"], correct:2}
+      ]
+    },
+    "Allgemeinwissen": {
+      leicht: [
+        {question:"Wie viele Kontinente gibt es?", answers:["5","6","7","8"], correct:2},
+        {question:"Welche Farbe hat die Sonne?", answers:["Gelb","Rot","Blau","Grün"], correct:0},
+        {question:"Wie viele Tage hat eine Woche?", answers:["5","6","7","8"], correct:2},
+        {question:"Was wächst auf Bäumen?", answers:["Autos","Blätter","Fische","Steine"], correct:1},
+        {question:"Welche Jahreszeit kommt nach dem Sommer?", answers:["Frühling","Winter","Herbst","Sommer"], correct:2},
+        {question:"Wie viele Monate hat ein Jahr?", answers:["10","11","12","13"], correct:2},
+        {question:"Was braucht eine Pflanze zum Wachsen?", answers:["Sonne","Wasser","Erde","Alle"], correct:3},
+        {question:"Was ist 2+2?", answers:["3","4","5","6"], correct:1},
+        {question:"Welche Farbe hat Gras?", answers:["Rot","Blau","Grün","Gelb"], correct:2},
+        {question:"Wie viele Augen hat ein Mensch?", answers:["1","2","3","4"], correct:1}
+      ],
+      mittel: [
+        {question:"Welcher Planet ist der dritte von der Sonne?", answers:["Venus","Erde","Mars","Jupiter"], correct:1},
+        {question:"Wie viele Bundesländer hat Deutschland?", answers:["14","15","16","17"], correct:2},
+        {question:"Wer schrieb 'Faust'?", answers:["Goethe","Schiller","Heine","Kleist"], correct:0},
+        {question:"Wie viele Zähne hat ein Erwachsener?", answers:["28","30","32","34"], correct:2},
+        {question:"Welches Element hat das chemische Symbol O?", answers:["Gold","Silber","Sauerstoff","Wasserstoff"], correct:2},
+        {question:"Wie heißt die Hauptstadt von Frankreich?", answers:["Berlin","Madrid","Paris","Rom"], correct:2},
+        {question:"Was ist H2O?", answers:["Kohlenstoff","Wasser","Salz","Sauerstoff"], correct:1},
+        {question:"Welcher Kontinent ist am größten?", answers:["Afrika","Asien","Europa","Amerika"], correct:1},
+        {question:"Wie viele Minuten hat eine Stunde?", answers:["50","55","60","65"], correct:2},
+        {question:"Was ist das Ergebnis von 5x5?", answers:["10","20","25","30"], correct:2}
+      ],
+      schwer: [
+        {question:"Wer malte die Mona Lisa?", answers:["Van Gogh","Da Vinci","Michelangelo","Picasso"], correct:1},
+        {question:"Wie viele Planeten hat unser Sonnensystem?", answers:["7","8","9","10"], correct:1},
+        {question:"Welches Gas atmen wir hauptsächlich ein?", answers:["Sauerstoff","Kohlendioxid","Stickstoff","Helium"], correct:2},
+        {question:"Wie heißt die größte Wüste der Welt?", answers:["Gobi","Sahara","Kalahari","Arktis"], correct:1},
+        {question:"Wer erfand die Glühbirne?", answers:["Edison","Tesla","Bell","Newton"], correct:0},
+        {question:"Wann begann der Zweite Weltkrieg?", answers:["1937","1939","1941","1945"], correct:1},
+        {question:"Was ist die kleinste Einheit des Lebens?", answers:["Zelle","Atom","Molekül","Organ"], correct:0},
+        {question:"Wie heißt das längste Fließgewässer?", answers:["Amazonas","Nil","Mississippi","Donau"], correct:0},
+        {question:"Wer schrieb 'Die Verwandlung'?", answers:["Kafka","Goethe","Schiller","Brecht"], correct:0},
+        {question:"Was ist die Quadratwurzel von 81?", answers:["7","8","9","10"], correct:2}
+      ]
+    },
+    "Schule & Bildung": {
+      leicht: [
+        {question:"Wie viele Stunden hat ein Schultag meistens?", answers:["4","5","6","7"], correct:2},
+        {question:"Was bringt man in die Schule mit?", answers:["Fernseher","Schulranzen","Auto","Handy"], correct:1},
+        {question:"Wie nennt man den Lehrer im Klassenzimmer?", answers:["Koch","Arzt","Lehrer","Schüler"], correct:2},
+        {question:"Welche Fächer gibt es in der Schule?", answers:["Mathe","Sport","Deutsch","Alle genannten"], correct:3},
+        {question:"Was schreibt man auf Papier?", answers:["E-Mail","Brief","Hausaufgaben","Anruf"], correct:2},
+        {question:"Wie viele Ferien gibt es im Jahr?", answers:["1","2","3","4"], correct:2},
+        {question:"Wie heißt das Buch für Mathe?", answers:["Lexikon","Atlas","Mathebuch","Kochbuch"], correct:2},
+        {question:"Was braucht man zum Schreiben?", answers:["Stift","Besen","Hammer","Schere"], correct:0},
+        {question:"Was ist eine Pause?", answers:["Lernen","Essen","Erholung","Sport"], correct:2},
+        {question:"Wie nennt man die älteste Schulform?", answers:["Grundschule","Gymnasium","Realschule","Universität"], correct:1}
+      ],
+      mittel: [
+        {question:"Wie heißt das Schulzeugnis?", answers:["Diplom","Abitur","Zeugnis","Urkunde"], correct:2},
+        {question:"Wie viele Stunden hat eine Schulwoche?", answers:["25","30","35","40"], correct:1},
+        {question:"Wer führt Klassenarbeiten durch?", answers:["Schüler","Lehrer","Eltern","Schulleitung"], correct:1},
+        {question:"Was ist ein Stundenplan?", answers:["Kalender","Zeitplan","Lernplan","Spielplan"], correct:1},
+        {question:"Wie heißt die Person, die eine Klasse leitet?", answers:["Direktor","Schulsprecher","Klassenlehrer","Hausmeister"], correct:2},
+        {question:"Was ist eine Klassenarbeit?", answers:["Test","Spiel","Urlaub","Feier"], correct:0},
+        {question:"Wie heißt die erste Klasse in der Schule?", answers:["1","0","A","B"], correct:0},
+        {question:"Was ist ein Fächerkanon?", answers:["Liste von Fächern","Notenübersicht","Lehrplan","Ferienplan"], correct:0},
+        {question:"Was lernt man in Biologie?", answers:["Geschichte","Tiere","Mathe","Kunst"], correct:1},
+        {question:"Wie viele Noten gibt es in Deutschland?", answers:["3","4","5","6"], correct:3}
+      ],
+      schwer: [
+        {question:"Was ist der höchste Schulabschluss in Deutschland?", answers:["Hauptschulabschluss","Realschulabschluss","Abitur","Bachelor"], correct:2},
+        {question:"Wie nennt man die Lehrervertretung?", answers:["Elternbeirat","Lehrerzimmer","Personalrat","Schülervertretung"], correct:2},
+        {question:"Was bedeutet 'Inklusion' in der Schule?", answers:["Ausschluss","Gemeinsames Lernen","Ferien","Stundenplan"], correct:1},
+        {question:"Wer ist für die Schulorganisation zuständig?", answers:["Schulleiter","Lehrer","Schüler","Eltern"], correct:0},
+        {question:"Was ist ein Schuljahr?", answers:["Ein Monat","Ein Quartal","Ein Jahr","Fünf Jahre"], correct:2},
+        {question:"Was ist der Unterschied zwischen Grundschule und Gymnasium?", answers:["Alter","Dauer","Lehrplan","Alle genannten"], correct:3},
+        {question:"Wie nennt man Prüfungen nach der 10. Klasse?", answers:["Abitur","Mittlere Reife","Hauptschulabschluss","Bachelor"], correct:1},
+        {question:"Was bedeutet 'Hausaufgaben'?", answers:["Schulaufgaben zu Hause","Freizeit","Sport","Essen"], correct:0},
+        {question:"Wie viele Stunden hat ein Schuljahr durchschnittlich?", answers:["500","800","1000","1200"], correct:2},
+        {question:"Wie heißt die Schulpflicht in Deutschland?", answers:["Pflicht","Recht","Gesetz","Verordnung"], correct:2}
+      ]
+    },
+    "Natur & Umwelt": {
+      leicht: [
+        {question:"Was wächst in einem Wald?", answers:["Bäume","Autos","Häuser","Computer"], correct:0},
+        {question:"Welches Tier lebt im Wasser?", answers:["Hund","Katze","Fisch","Vogel"], correct:2},
+        {question:"Was braucht eine Pflanze?", answers:["Wasser","Benzin","Holz","Metall"], correct:0},
+        {question:"Wie viele Jahreszeiten gibt es?", answers:["2","3","4","5"], correct:2},
+        {question:"Was produziert Bäume?", answers:["Wasser","Sauerstoff","Erde","Feuer"], correct:1},
+        {question:"Was sind Insekten?", answers:["Pflanzen","Tiere","Steine","Menschen"], correct:1},
+        {question:"Welche Farbe hat die Erde aus dem Weltall?", answers:["Blau","Rot","Grün","Gelb"], correct:0},
+        {question:"Was ist Recycling?", answers:["Wegwerfen","Wiederverwertung","Verbrennen","Lagern"], correct:1},
+        {question:"Wie nennt man Tiere, die Pflanzen fressen?", answers:["Carnivoren","Herbivoren","Omnivoren","Insekten"], correct:1},
+        {question:"Wie nennt man fliegende Säugetiere?", answers:["Vögel","Fledermäuse","Insekten","Reptilien"], correct:1}
+      ],
+      mittel: [
+        {question:"Welcher Planet ist für uns am besten geeignet?", answers:["Mars","Venus","Erde","Merkur"], correct:2},
+        {question:"Wie nennt man den Lebensraum von Tieren?", answers:["Ökosystem","Klima","Umwelt","Kontinent"], correct:0},
+        {question:"Was verursacht den Treibhauseffekt?", answers:["Wasser","CO2","Sauerstoff","Stickstoff"], correct:1},
+        {question:"Wie nennt man den Prozess, bei dem Pflanzen Licht in Energie umwandeln?", answers:["Photosynthese","Atmung","Verdunstung","Filtration"], correct:0},
+        {question:"Welche Tiere sind Pflanzenfresser?", answers:["Löwen","Kühe","Haie","Adler"], correct:1},
+        {question:"Wie viele Kontinente gibt es?", answers:["5","6","7","8"], correct:2},
+        {question:"Was ist Bodenerosion?", answers:["Abtragung des Bodens","Aufbau des Bodens","Pflanzenwachstum","Wasserverbrauch"], correct:0},
+        {question:"Welches Gas produzieren Bäume?", answers:["CO2","Sauerstoff","Methan","Stickstoff"], correct:1},
+        {question:"Wie nennt man Tiere, die sowohl Pflanzen als auch Fleisch fressen?", answers:["Herbivoren","Carnivoren","Omnivoren","Insekten"], correct:2},
+        {question:"Welches Tier ist kein Insekt?", answers:["Biene","Schmetterling","Spinne","Ameise"], correct:2}
+      ],
+      schwer: [
+        {question:"Was ist Biodiversität?", answers:["Vielfalt des Lebens","Klimawandel","Verschmutzung","Waldsterben"], correct:0},
+        {question:"Wie nennt man die Wissenschaft vom Klima?", answers:["Meteorologie","Biologie","Geologie","Physik"], correct:0},
+        {question:"Welcher Prozess ist für den Wasserkreislauf wichtig?", answers:["Verdunstung","Abbau","Fotosynthese","Atmung"], correct:0},
+        {question:"Was ist eine invasive Art?", answers:["Einheimische Art","Fremde Art","Gefährdete Art","Nutzpflanze"], correct:1},
+        {question:"Wie viel Prozent der Erdoberfläche sind mit Wasser bedeckt?", answers:["50%","60%","70%","80%"], correct:2},
+        {question:"Was versteht man unter nachhaltiger Entwicklung?", answers:["Kurzfristiger Gewinn","Langfristige Nutzung der Ressourcen","Schnelle Ausbeutung","Umweltverschmutzung"], correct:1},
+        {question:"Wie nennt man die oberste Erdschicht?", answers:["Gestein","Boden","Erde","Mantel"], correct:1},
+        {question:"Welcher Baum verliert im Herbst seine Blätter?", answers:["Tanne","Eiche","Fichte","Kiefer"], correct:1},
+        {question:"Wie nennt man Tiere, die sich von totem Material ernähren?", answers:["Karnivoren","Herbivoren","Detritivoren","Omnivoren"], correct:2},
+        {question:"Was ist die Ursache für das Waldsterben?", answers:["Saurer Regen","Dürre","Schädlinge","Alle genannten"], correct:3}
+      ]
+    },
+    "Sport & Freizeit": {
+      leicht: [
+        {question:"Welche Sportart ist mit einem Ball?", answers:["Schwimmen","Fußball","Laufen","Turnen"], correct:1},
+        {question:"Wie viele Spieler hat ein Fußballteam?", answers:["7","9","11","13"], correct:2},
+        {question:"Welche Sportart macht man im Wasser?", answers:["Segeln","Tauchen","Basketball","Tennis"], correct:1},
+        {question:"Wie viele Minuten dauert ein Fußballspiel?", answers:["60","70","90","100"], correct:2},
+        {question:"Welche Sportart benutzt einen Schläger?", answers:["Tennis","Laufen","Schwimmen","Boxen"], correct:0},
+        {question:"Was trägt man beim Schwimmen?", answers:["Jacke","Schwimmanzug","Hose","Schuhe"], correct:1},
+        {question:"Wie nennt man eine Person, die läuft?", answers:["Läufer","Schwimmer","Radfahrer","Turner"], correct:0},
+        {question:"Was braucht man für Fußball?", answers:["Ball","Schläger","Netz","Schuhe"], correct:0},
+        {question:"Welche Sportart ist olympisch?", answers:["Tanzen","Schwimmen","Schach","Billard"], correct:1},
+        {question:"Wie viele Punkte gibt es für ein Tor?", answers:["1","2","3","4"], correct:0}
+      ],
+      mittel: [
+        {question:"Wie viele Ringe hat das olympische Symbol?", answers:["3","4","5","6"], correct:2},
+        {question:"Was bedeutet 'Dribbeln'?", answers:["Laufen mit Ball","Springen","Schießen","Passen"], correct:0},
+        {question:"Wie lang ist ein Marathon?", answers:["42,195 km","40 km","35 km","50 km"], correct:0},
+        {question:"Wer hat die meisten Fußball-Weltmeisterschaften gewonnen?", answers:["Brasilien","Deutschland","Italien","Argentinien"], correct:0},
+        {question:"Wie viele Spieler sind in einem Basketballteam auf dem Feld?", answers:["4","5","6","7"], correct:1},
+        {question:"Was ist ein 'Hat-Trick'?", answers:["3 Tore in einem Spiel","3 Siege","3 Fouls","3 Pässe"], correct:0},
+        {question:"Wie viele Minuten dauert ein Basketballspiel?", answers:["32","40","48","60"], correct:2},
+        {question:"Welche Sportart ist nicht olympisch?", answers:["Golf","Klettern","Squash","Billard"], correct:3},
+        {question:"Was ist 'Offside' im Fußball?", answers:["Abseits","Foul","Handspiel","Ecke"], correct:0},
+        {question:"Wie nennt man die Fußball-WM?", answers:["FIFA","NBA","NFL","NHL"], correct:0}
+      ],
+      schwer: [
+        {question:"Wann fand die erste Olympiade der Neuzeit statt?", answers:["1896","1900","1912","1924"], correct:0},
+        {question:"Wie viele Medaillen wurden bei den letzten Olympischen Spielen vergeben?", answers:["300","400","500","600"], correct:2},
+        {question:"Wer hält den Weltrekord im 100-Meter-Lauf (Männer)?", answers:["Usain Bolt","Carl Lewis","Justin Gatlin","Tyson Gay"], correct:0},
+        {question:"Wie viele Runden hat ein Boxkampf normalerweise?", answers:["10","12","15","20"], correct:1},
+        {question:"Was bedeutet 'Sudden Death' im Sport?", answers:["Unentschieden","Plötzlicher Sieg","Verlängerung","Zeitstrafe"], correct:1},
+        {question:"Welcher Sportler hat die meisten Grand Slam-Titel im Tennis?", answers:["Roger Federer","Rafael Nadal","Novak Djokovic","Pete Sampras"], correct:1},
+        {question:"Wie viele Spieler sind bei Rugby im Team?", answers:["11","13","15","17"], correct:2},
+        {question:"Wie heißt die höchste deutsche Fußballliga?", answers:["Bundesliga","Premier League","La Liga","Serie A"], correct:0},
+        {question:"Was ist der 'Alley-oop' im Basketball?", answers:["Pass und Dunk","Dunk allein","Dribbling","Foul"], correct:0},
+        {question:"Wie viele Minuten dauert ein Eishockeyspiel?", answers:["40","45","60","90"], correct:2}
+      ]
+    }
+  };
+
+  // Zustand
+  let selectedTopic = null;
+  let selectedDifficulty = null;
+  let currentQuiz = [];
+  let currentQuestionIndex = 0;
+  let score = 0;
+
+  // DOM Elemente
+  const topicButtonsDiv = document.getElementById("topic-buttons");
+  const difficultyButtonsDiv = document.getElementById("difficulty-buttons");
+  const startScreen = document.getElementById("start-screen");
+  const quizScreen = document.getElementById("quiz-screen");
+  const resultScreen = document.getElementById("result-screen");
+  const progressDiv = document.getElementById("progress");
+  const questionDiv = document.getElementById("question");
+  const answersDiv = document.getElementById("answers");
+  const scoreP = document.getElementById("score");
+  const restartBtn = document.getElementById("restart-btn");
+
+  // Themen Buttons generieren
+  function createTopicButtons() {
+    topicButtonsDiv.innerHTML = "";
+    topics.forEach(topic => {
+      const btn = document.createElement("button");
+      btn.textContent = topic;
+      btn.onclick = () => {
+        selectedTopic = topic;
+        highlightSelected(topicButtonsDiv, btn);
+        checkStartEnabled();
+      };
+      topicButtonsDiv.appendChild(btn);
+    });
+  }
+
+  // Schwierigkeit Buttons generieren
+  function createDifficultyButtons() {
+    difficultyButtonsDiv.innerHTML = "";
+    difficulties.forEach(diff => {
+      const btn = document.createElement("button");
+      btn.textContent = diff.charAt(0).toUpperCase() + diff.slice(1);
+      btn.onclick = () => {
+        selectedDifficulty = diff;
+        highlightSelected(difficultyButtonsDiv, btn);
+        checkStartEnabled();
+      };
+      difficultyButtonsDiv.appendChild(btn);
+    });
+  }
+
+  // Button Auswahl hervorheben
+  function highlightSelected(container, selectedBtn) {
+    [...container.children].forEach(btn => btn.style.backgroundColor = "#000");
+    selectedBtn.style.backgroundColor = "#0f0";
+    selectedBtn.style.color = "#000";
+  }
+
+  // Prüfen ob Thema + Schwierigkeit gewählt sind
+  function checkStartEnabled() {
+    const startBtn = document.getElementById("start-quiz-btn");
+    if(selectedTopic && selectedDifficulty) {
+      if(!startBtn) {
+        const btn = document.createElement("button");
+        btn.id = "start-quiz-btn";
+        btn.textContent = "Quiz starten";
+        btn.onclick = startQuiz;
+        startScreen.appendChild(btn);
+      }
+    }
+  }
+
+  // Quiz starten
+  function startQuiz() {
+    score = 0;
+    currentQuestionIndex = 0;
+    currentQuiz = quizData[selectedTopic][selectedDifficulty];
+    startScreen.style.display = "none";
+    quizScreen.style.display = "block";
+    resultScreen.style.display = "none";
+    showQuestion();
+  }
+
+  // Frage anzeigen
+  function showQuestion() {
+    const q = currentQuiz[currentQuestionIndex];
+    progressDiv.textContent = `Frage ${currentQuestionIndex + 1} von ${currentQuiz.length}`;
+    questionDiv.textContent = q.question;
+    answersDiv.innerHTML = "";
+    q.answers.forEach((answer, i) => {
+      const btn = document.createElement("button");
+      btn.className = "answer-btn";
+      btn.textContent = answer;
+      btn.onclick = () => answerClicked(i);
+      answersDiv.appendChild(btn);
+    });
+  }
+
+  // Antwort angeklickt
+  function answerClicked(index) {
+    const q = currentQuiz[currentQuestionIndex];
+    const buttons = answersDiv.children;
+
+    // Antwort-Buttons deaktivieren
+    for(let btn of buttons) btn.disabled = true;
+
+    if(index === q.correct) {
+      score++;
+      buttons[index].classList.add("correct");
+    } else {
+      buttons[index].classList.add("wrong");
+      buttons[q.correct].classList.add("correct");
+    }
+
+    // Nächste Frage nach kurzer Verzögerung
+    setTimeout(() => {
+      currentQuestionIndex++;
+      if(currentQuestionIndex < currentQuiz.length) {
+        showQuestion();
+      } else {
+        showResult();
+      }
+    }, 1500);
+  }
+
+  // Ergebnis anzeigen
+  function showResult() {
+    quizScreen.style.display = "none";
+    resultScreen.style.display = "block";
+    scoreP.textContent = `Du hast ${score} von ${currentQuiz.length} Fragen richtig beantwortet.`;
+  }
+
+  // Quiz neu starten
+  restartBtn.onclick = () => {
+    selectedTopic = null;
+    selectedDifficulty = null;
+    currentQuiz = [];
+    currentQuestionIndex = 0;
+    score = 0;
+    resultScreen.style.display = "none";
+    startScreen.style.display = "block";
+    createTopicButtons();
+    createDifficultyButtons();
+    // Start-Button entfernen falls da
+    const startBtn = document.getElementById("start-quiz-btn");
+    if(startBtn) startBtn.remove();
+  };
+
+  // Initialisierung
+  createTopicButtons();
+  createDifficultyButtons();
+</script>
+
+</body>
+</html>
